@@ -5,7 +5,7 @@ from app.api.dependencies.auth import get_current_active_user
 from app.database.connection import get_db
 from app.models import User
 from app.schemas.account import AccountCreate, AccountRead, AccountUpdate
-from app.services import account_service
+from app.services import account_service, transaction_service
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
 
@@ -43,6 +43,16 @@ def update_account(
     db: Session = Depends(get_db),
 ):
     return account_service.update_account(db, user, account_id, data)
+
+
+@router.post("/{account_id}/recalculate", response_model=AccountRead)
+def recalculate_balance(
+    account_id: int,
+    user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Recalcula balance = initial_balance + Σ ingresos − Σ gastos."""
+    return transaction_service.recalculate_balance(db, user, account_id)
 
 
 @router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)

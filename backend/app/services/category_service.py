@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import Category, User
-from app.repositories import category_repository
+from app.repositories import category_repository, transaction_repository
 from app.schemas.category import CategoryCreate, CategoryUpdate
 from app.services.ownership import ensure_editable
 
@@ -53,4 +53,9 @@ def delete_category(db: Session, user: User, category_id: int) -> None:
     category = ensure_editable(
         category_repository.get_by_id(db, category_id), user.id, "Categoría"
     )
+    if transaction_repository.exists_for_category(db, category.id):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="La categoría tiene movimientos; reasígnalos antes de borrarla",
+        )
     category_repository.delete(db, category)

@@ -7,6 +7,7 @@ from app.api.routes import (
     categories,
     health,
     payment_methods,
+    transactions,
     users,
 )
 from app.core.config import settings
@@ -27,6 +28,7 @@ app.include_router(users.router)
 app.include_router(accounts.router)
 app.include_router(categories.router)
 app.include_router(payment_methods.router)
+app.include_router(transactions.router)
 
 
 @app.get("/")

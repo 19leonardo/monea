@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import Account, User
-from app.repositories import account_repository
+from app.repositories import account_repository, transaction_repository
 from app.schemas.account import AccountCreate, AccountUpdate
 
 
@@ -47,4 +47,9 @@ def update_account(db: Session, user: User, account_id: int, data: AccountUpdate
 
 def delete_account(db: Session, user: User, account_id: int) -> None:
     account = get_account(db, user, account_id)
+    if transaction_repository.exists_for_account(db, account.id):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="La cuenta tiene movimientos; desactívala (is_active=false) en lugar de borrarla",
+        )
     account_repository.delete(db, account)
