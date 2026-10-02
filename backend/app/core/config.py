@@ -6,7 +6,8 @@ class Settings(BaseSettings):
 
     app_name: str = "Monea API"
     environment: str = "development"
-    database_url: str = "postgresql://monea:monea_dev_password@db:5432/monea"
+    # Obligatoria y sin valor por defecto: las credenciales solo viven en el .env.
+    database_url: str
     cors_origins: list[str] = ["*"]
 
     secret_key: str
