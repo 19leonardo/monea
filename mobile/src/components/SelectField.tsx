@@ -1,25 +1,10 @@
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import {
-  ActivityIndicator,
-  Button,
-  HelperText,
-  List,
-  Modal,
-  Portal,
-  Text,
-  TextInput,
-  useTheme,
-} from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, HelperText, TextInput } from 'react-native-paper';
 
-export type SelectOption<T> = {
-  value: T;
-  label: string;
-  description?: string;
-  /** Icono de Material Design Icons. */
-  icon?: string;
-};
+import { OptionSheet, type SelectOption } from './OptionSheet';
+
+export type { SelectOption };
 
 type Props<T> = {
   label: string;
@@ -55,17 +40,10 @@ export function SelectField<T extends string | number>({
   optional = false,
   icon,
 }: Props<T>) {
-  const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
 
   const selected = options.find((option) => option.value === value);
   const blocked = disabled || loading || !!loadError;
-
-  const choose = (next: T | null) => {
-    onChange(next);
-    setOpen(false);
-  };
 
   return (
     <View>
@@ -113,57 +91,15 @@ export function SelectField<T extends string | number>({
         </HelperText>
       )}
 
-      <Portal>
-        <Modal
-          visible={open}
-          onDismiss={() => setOpen(false)}
-          style={styles.modal}
-          contentContainerStyle={[
-            styles.sheet,
-            { backgroundColor: colors.surface, paddingBottom: 12 + insets.bottom },
-          ]}
-        >
-          <Text variant="titleMedium" style={styles.sheetTitle}>
-            {label}
-          </Text>
-          <FlatList
-            data={options}
-            keyExtractor={(option) => String(option.value)}
-            ListHeaderComponent={
-              optional ? (
-                <List.Item
-                  title="Ninguno"
-                  left={(props) => <List.Icon {...props} icon="close-circle-outline" />}
-                  onPress={() => choose(null)}
-                />
-              ) : null
-            }
-            ListEmptyComponent={
-              <Text style={[styles.empty, { color: colors.onSurfaceVariant }]}>
-                No hay opciones disponibles
-              </Text>
-            }
-            renderItem={({ item }) => {
-              const isSelected = item.value === value;
-              return (
-                <List.Item
-                  title={item.label}
-                  description={item.description}
-                  onPress={() => choose(item.value)}
-                  style={isSelected && { backgroundColor: colors.secondaryContainer }}
-                  left={(props) =>
-                    item.icon ? <List.Icon {...props} icon={item.icon} /> : null
-                  }
-                  right={(props) =>
-                    isSelected ? <List.Icon {...props} icon="check" color={colors.primary} /> : null
-                  }
-                  accessibilityState={{ selected: isSelected }}
-                />
-              );
-            }}
-          />
-        </Modal>
-      </Portal>
+      <OptionSheet
+        visible={open}
+        title={label}
+        options={options}
+        value={value}
+        onSelect={onChange}
+        onDismiss={() => setOpen(false)}
+        emptyOptionLabel={optional ? 'Ninguno' : undefined}
+      />
     </View>
   );
 }
@@ -172,13 +108,4 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   helper: { minHeight: 24 },
   loadError: { flexDirection: 'row', alignItems: 'center', minHeight: 24 },
-  modal: { justifyContent: 'flex-end', margin: 0 },
-  sheet: {
-    maxHeight: '75%',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingTop: 16,
-  },
-  sheetTitle: { paddingHorizontal: 24, paddingBottom: 8, fontWeight: 'bold' },
-  empty: { textAlign: 'center', padding: 24 },
 });

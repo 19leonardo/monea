@@ -34,3 +34,48 @@ export function formatDateLabel(value: string): string {
   const date = fromISODate(value);
   return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
+
+const WEEKDAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
+/** Encabezado de un día en el historial: "Hoy", "Ayer" o "lunes, 5 oct 2026". */
+export function formatDayHeader(value: string): string {
+  const label = formatDateLabel(value);
+  if (label === 'Hoy' || label === 'Ayer') return label;
+  return `${WEEKDAYS[fromISODate(value).getDay()]}, ${label}`;
+}
+
+export type DateRange = { start: string; end: string };
+
+/** Rangos rápidos para filtrar el historial. */
+export function dateRangePresets(today = new Date()): { label: string; range: DateRange }[] {
+  const y = today.getFullYear();
+  const m = today.getMonth();
+  const d = today.getDate();
+  return [
+    {
+      label: 'Este mes',
+      range: { start: toISODate(new Date(y, m, 1)), end: toISODate(today) },
+    },
+    {
+      label: 'Mes pasado',
+      range: { start: toISODate(new Date(y, m - 1, 1)), end: toISODate(new Date(y, m, 0)) },
+    },
+    {
+      label: 'Últimos 7 días',
+      range: { start: toISODate(new Date(y, m, d - 6)), end: toISODate(today) },
+    },
+    {
+      label: 'Últimos 30 días',
+      range: { start: toISODate(new Date(y, m, d - 29)), end: toISODate(today) },
+    },
+    {
+      label: 'Este año',
+      range: { start: toISODate(new Date(y, 0, 1)), end: toISODate(today) },
+    },
+  ];
+}
+
+/** "5 oct 2026 – 12 oct 2026" (o "Hoy" si empieza y termina hoy). */
+export function formatRangeLabel({ start, end }: DateRange): string {
+  return start === end ? formatDateLabel(start) : `${formatDateLabel(start)} – ${formatDateLabel(end)}`;
+}

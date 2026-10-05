@@ -40,3 +40,20 @@ export type TransactionCreate = {
   /** "YYYY-MM-DD" */
   date: string;
 };
+
+/** Filtros de GET /transactions (todos opcionales; nombres = query params del backend). */
+export type TransactionFilters = {
+  type?: TransactionType;
+  account_id?: number;
+  category_id?: number;
+  payment_method_id?: number;
+  /** "YYYY-MM-DD", inclusive */
+  start_date?: string;
+  /** "YYYY-MM-DD", inclusive */
+  end_date?: string;
+};
+
+export type TransactionPage = {
+  limit?: number;
+  offset?: number;
+};

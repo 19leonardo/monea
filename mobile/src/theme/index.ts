@@ -27,3 +27,9 @@ export const theme: MD3Theme = {
     error: '#BA1A1A',
   },
 };
+
+/** Colores semánticos de dinero (fuera de la paleta MD3 de Paper). */
+export const moneyColors = {
+  income: '#2E7D32',
+  expense: theme.colors.error,
+};
