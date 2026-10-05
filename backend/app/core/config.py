@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     # Obligatoria y sin valor por defecto: las credenciales solo viven en el .env.
     database_url: str
     cors_origins: list[str] = ["*"]
+    # Zona horaria de los usuarios: define qué es "hoy" / "el mes actual".
+    timezone: str = "America/La_Paz"
 
     secret_key: str
     algorithm: str = "HS256"

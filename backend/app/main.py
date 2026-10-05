@@ -7,6 +7,7 @@ from app.api.routes import (
     categories,
     health,
     payment_methods,
+    statistics,
     transactions,
     users,
 )
@@ -29,6 +30,7 @@ app.include_router(accounts.router)
 app.include_router(categories.router)
 app.include_router(payment_methods.router)
 app.include_router(transactions.router)
+app.include_router(statistics.router)
 
 
 @app.get("/")
