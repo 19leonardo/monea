@@ -32,6 +32,7 @@ export default function AppLayout() {
         name="budgets/new"
         options={{ title: 'Nuevo presupuesto', presentation: 'modal' }}
       />
+      <Stack.Screen name="goals/new" options={{ title: 'Nueva meta', presentation: 'modal' }} />
       <Stack.Screen
         name="accounts/new"
         options={{ title: 'Nueva cuenta', presentation: 'modal' }}

@@ -12,11 +12,20 @@ type Props = {
   onChange: (value: string) => void;
   error?: string;
   disabled?: boolean;
+  minimumDate?: Date;
   maximumDate?: Date;
 };
 
 /** Campo de fecha: muestra "Hoy", "Ayer" o "5 oct 2026" y abre el calendario nativo. */
-export function DateField({ label, value, onChange, error, disabled, maximumDate }: Props) {
+export function DateField({
+  label,
+  value,
+  onChange,
+  error,
+  disabled,
+  minimumDate,
+  maximumDate,
+}: Props) {
   const { colors } = useTheme();
   const [iosOpen, setIosOpen] = useState(false);
   const [iosDraft, setIosDraft] = useState(() => fromISODate(value));
@@ -27,6 +36,7 @@ export function DateField({ label, value, onChange, error, disabled, maximumDate
       DateTimePickerAndroid.open({
         value: fromISODate(value),
         mode: 'date',
+        minimumDate,
         maximumDate,
         onValueChange: (_event, date) => onChange(toISODate(date)),
       });
@@ -71,6 +81,7 @@ export function DateField({ label, value, onChange, error, disabled, maximumDate
               value={iosDraft}
               mode="date"
               display="inline"
+              minimumDate={minimumDate}
               maximumDate={maximumDate}
               locale="es-BO"
               accentColor={colors.primary}

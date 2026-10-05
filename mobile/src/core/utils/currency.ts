@@ -57,3 +57,17 @@ export function parseMoneyInput(input: string): string | null {
   if (!/^-?\d+(\.\d{1,2})?$/.test(text)) return null;
   return centsToDecimal(toCents(text));
 }
+
+/**
+ * Porcentaje que llega del backend como texto ("43.75") en formato boliviano:
+ * "43,75 %"; sin decimales si son cero ("100 %").
+ */
+export function formatPercent(value: string | number): string {
+  const cents = toCents(value);
+  const integer = Math.trunc(Math.abs(cents) / 100);
+  const decimals = Math.abs(cents) % 100;
+  const sign = cents < 0 ? '-' : '';
+  return decimals === 0
+    ? `${sign}${integer} %`
+    : `${sign}${integer},${String(decimals).padStart(2, '0')} %`;
+}
