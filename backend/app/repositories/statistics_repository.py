@@ -9,7 +9,7 @@ from decimal import Decimal
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
-from app.models import Account, Transaction
+from app.models import Account, Category, Transaction
 
 
 @dataclass(frozen=True)
@@ -59,3 +59,38 @@ def transaction_totals(
     return TransactionTotals(
         income=Decimal(income_total), expenses=Decimal(expenses_total), count=count
     )
+
+
+@dataclass(frozen=True)
+class CategoryTotal:
+    category_id: int
+    category_name: str
+    category_icon: str
+    total: Decimal
+
+
+def totals_by_category(
+    db: Session, user_id: int, transaction_type: str, start: dt.date, end_exclusive: dt.date
+) -> list[CategoryTotal]:
+    """
+    SUM(amount) por categoría con GROUP BY + JOIN a categories (para el nombre),
+    de mayor a menor. Solo devuelve una fila por categoría, no los movimientos.
+    """
+    total = func.sum(Transaction.amount).label("total")
+    rows = db.execute(
+        select(Category.id, Category.name, Category.icon, total)
+        .select_from(Transaction)
+        .join(Category, Category.id == Transaction.category_id)
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.type == transaction_type,
+            Transaction.date >= start,
+            Transaction.date < end_exclusive,
+        )
+        .group_by(Category.id, Category.name, Category.icon)
+        .order_by(total.desc(), Category.name)
+    ).all()
+    return [
+        CategoryTotal(category_id=id_, category_name=name, category_icon=icon, total=Decimal(sum_))
+        for id_, name, icon, sum_ in rows
+    ]
