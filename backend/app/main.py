@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import (
     accounts,
     auth,
+    budgets,
     categories,
     health,
     payment_methods,
@@ -31,6 +32,7 @@ app.include_router(categories.router)
 app.include_router(payment_methods.router)
 app.include_router(transactions.router)
 app.include_router(statistics.router)
+app.include_router(budgets.router)
 
 
 @app.get("/")
