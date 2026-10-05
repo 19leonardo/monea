@@ -3,6 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { accountsKey } from '@/features/accounts/useAccounts';
 import { budgetsKey } from '@/features/budgets/useBudgets';
 import { recentTransactionsKey, summaryKey } from '@/features/dashboard/useDashboard';
+import { statisticsKey } from '@/features/statistics/useStatistics';
 
 import { createTransaction, listTransactions } from './transactions.api';
 import type { TransactionCreate, TransactionFilters } from './transactions.types';
@@ -44,7 +45,7 @@ export function useCreateTransaction() {
     mutationFn: (data: TransactionCreate) => createTransaction(data),
     // El backend ajusta el saldo de la cuenta: se recargan cuentas, movimientos
     // (todas las queries que empiezan por ['transactions'], con cualquier filtro),
-    // los recientes, el resumen del dashboard y los presupuestos (lo gastado).
+    // los recientes, el resumen del dashboard, los presupuestos (lo gastado) y los gráficos.
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: accountsKey }),
@@ -52,6 +53,7 @@ export function useCreateTransaction() {
         queryClient.invalidateQueries({ queryKey: recentTransactionsKey }),
         queryClient.invalidateQueries({ queryKey: summaryKey }),
         queryClient.invalidateQueries({ queryKey: budgetsKey }),
+        queryClient.invalidateQueries({ queryKey: statisticsKey }),
       ]),
   });
 }
