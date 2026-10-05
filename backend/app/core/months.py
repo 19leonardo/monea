@@ -11,9 +11,14 @@ MONTH_REGEX = r"^(\d{4})-(0[1-9]|1[0-2])$"
 _MONTH_PATTERN = re.compile(MONTH_REGEX)
 
 
+def local_today() -> dt.date:
+    """Fecha de hoy en la zona horaria de los usuarios (no en la del servidor, que es UTC)."""
+    return dt.datetime.now(ZoneInfo(settings.timezone)).date()
+
+
 def current_month() -> str:
-    """Mes actual en la zona horaria de los usuarios (no en la del servidor, que es UTC)."""
-    return dt.datetime.now(ZoneInfo(settings.timezone)).strftime("%Y-%m")
+    """Mes actual en la zona horaria de los usuarios."""
+    return local_today().strftime("%Y-%m")
 
 
 def parse_month(month: str) -> tuple[dt.date, dt.date]:
