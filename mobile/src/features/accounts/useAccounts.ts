@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { summaryKey } from '@/features/dashboard/useDashboard';
+
 import { createAccount, deleteAccount, listAccounts, updateAccount } from './accounts.api';
 import type { AccountCreate, AccountUpdate } from './accounts.types';
 
@@ -9,10 +11,17 @@ export function useAccounts() {
   return useQuery({ queryKey: accountsKey, queryFn: listAccounts });
 }
 
-/** Tras cualquier cambio se invalida la lista para que se recargue sola. */
+/**
+ * Tras cualquier cambio se invalida la lista para que se recargue sola, y el
+ * resumen del dashboard (saldo total y número de cuentas).
+ */
 function useInvalidateAccounts() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: accountsKey });
+  return () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: accountsKey }),
+      queryClient.invalidateQueries({ queryKey: summaryKey }),
+    ]);
 }
 
 export function useCreateAccount() {

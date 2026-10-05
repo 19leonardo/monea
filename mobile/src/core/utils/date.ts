@@ -79,3 +79,14 @@ export function dateRangePresets(today = new Date()): { label: string; range: Da
 export function formatRangeLabel({ start, end }: DateRange): string {
   return start === end ? formatDateLabel(start) : `${formatDateLabel(start)} – ${formatDateLabel(end)}`;
 }
+
+const MONTH_NAMES = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+/** "2026-10" -> "octubre 2026". */
+export function formatMonthLabel(period: string): string {
+  const [year, month] = period.split('-').map(Number);
+  return `${MONTH_NAMES[month - 1]} ${year}`;
+}

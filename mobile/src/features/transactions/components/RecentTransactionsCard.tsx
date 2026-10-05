@@ -4,38 +4,42 @@ import { ActivityIndicator, Button, Card, Text, useTheme } from 'react-native-pa
 
 import { getApiErrorMessage } from '@/core/api/errors';
 
-import { useTransactions } from '../useTransactions';
+import type { Transaction } from '../transactions.types';
 import { TransactionListItem } from './TransactionListItem';
 
-const RECENT_LIMIT = 5;
+type Props = {
+  transactions: Transaction[] | undefined;
+  isPending: boolean;
+  error: unknown;
+  onRetry: () => void;
+};
 
-/** Tarjeta de Inicio: los últimos movimientos y acceso al historial completo. */
-export function RecentTransactionsCard() {
+/** Sección "Últimos movimientos" de Inicio, con acceso al historial completo. */
+export function RecentTransactionsCard({ transactions, isPending, error, onRetry }: Props) {
   const { colors } = useTheme();
-  const { data, isPending, isError, error, refetch } = useTransactions({}, RECENT_LIMIT);
 
   let body;
   if (isPending) {
     body = <ActivityIndicator style={styles.loader} />;
-  } else if (isError) {
+  } else if (error || !transactions) {
     body = (
       <>
         <Text variant="bodyMedium" style={[styles.padded, { color: colors.error }]}>
           {getApiErrorMessage(error)}
         </Text>
-        <Button compact onPress={() => refetch()} style={styles.retry}>
+        <Button compact onPress={onRetry} style={styles.retry}>
           Reintentar
         </Button>
       </>
     );
-  } else if (data.length === 0) {
+  } else if (transactions.length === 0) {
     body = (
       <Text variant="bodyMedium" style={[styles.padded, { color: colors.onSurfaceVariant }]}>
-        Aún no hay movimientos. Usa el botón ➕ para registrar el primero.
+        Registra tu primer movimiento con el botón ➕.
       </Text>
     );
   } else {
-    body = data.map((transaction) => (
+    body = transactions.map((transaction) => (
       <TransactionListItem key={transaction.id} transaction={transaction} showDate />
     ));
   }
