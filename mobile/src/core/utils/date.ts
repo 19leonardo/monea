@@ -90,3 +90,14 @@ export function formatMonthLabel(period: string): string {
   const [year, month] = period.split('-').map(Number);
   return `${MONTH_NAMES[month - 1]} ${year}`;
 }
+
+/** Mes actual "YYYY-MM" en la hora local del teléfono. */
+export function currentMonth(today = new Date()): string {
+  return toISODate(today).slice(0, 7);
+}
+
+/** Suma (o resta) meses: shiftMonth("2026-01", -1) -> "2025-12". */
+export function shiftMonth(period: string, delta: number): string {
+  const [year, month] = period.split('-').map(Number);
+  return currentMonth(new Date(year, month - 1 + delta, 1));
+}

@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { accountsKey } from '@/features/accounts/useAccounts';
+import { budgetsKey } from '@/features/budgets/useBudgets';
 import { recentTransactionsKey, summaryKey } from '@/features/dashboard/useDashboard';
 
 import { createTransaction, listTransactions } from './transactions.api';
@@ -43,13 +44,14 @@ export function useCreateTransaction() {
     mutationFn: (data: TransactionCreate) => createTransaction(data),
     // El backend ajusta el saldo de la cuenta: se recargan cuentas, movimientos
     // (todas las queries que empiezan por ['transactions'], con cualquier filtro),
-    // los recientes y el resumen del dashboard.
+    // los recientes, el resumen del dashboard y los presupuestos (lo gastado).
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: accountsKey }),
         queryClient.invalidateQueries({ queryKey: transactionsKey }),
         queryClient.invalidateQueries({ queryKey: recentTransactionsKey }),
         queryClient.invalidateQueries({ queryKey: summaryKey }),
+        queryClient.invalidateQueries({ queryKey: budgetsKey }),
       ]),
   });
 }

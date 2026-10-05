@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, List, Text, useTheme } from 'react-native-paper';
 
 import { getApiErrorMessage } from '@/core/api/errors';
@@ -22,12 +22,13 @@ export function AccountsMiniList({ accounts, isPending, error, onRetry }: Props)
     body = <ActivityIndicator style={styles.loader} />;
   } else if (error || !accounts) {
     body = (
-      <>
+      // View (no Fragment): Card de Paper clona a sus hijos con la prop `index`.
+      <View style={styles.errorBox}>
         <Text style={[styles.padded, { color: colors.error }]}>{getApiErrorMessage(error)}</Text>
         <Button compact onPress={onRetry} style={styles.retry}>
           Reintentar
         </Button>
-      </>
+      </View>
     );
   } else if (accounts.length === 0) {
     body = (
@@ -82,6 +83,7 @@ export function AccountsMiniList({ accounts, isPending, error, onRetry }: Props)
 }
 
 const styles = StyleSheet.create({
+  errorBox: { gap: 4 },
   card: { width: '100%' },
   loader: { marginVertical: 16 },
   padded: { paddingHorizontal: 16 },

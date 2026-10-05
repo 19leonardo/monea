@@ -27,6 +27,11 @@ export default function AppLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="accounts/index" options={{ title: 'Cuentas' }} />
       <Stack.Screen name="transactions" options={{ title: 'Movimientos' }} />
+      <Stack.Screen name="budgets/index" options={{ title: 'Presupuestos' }} />
+      <Stack.Screen
+        name="budgets/new"
+        options={{ title: 'Nuevo presupuesto', presentation: 'modal' }}
+      />
       <Stack.Screen
         name="accounts/new"
         options={{ title: 'Nueva cuenta', presentation: 'modal' }}

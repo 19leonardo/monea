@@ -4,9 +4,12 @@ import { Text, useTheme } from 'react-native-paper';
 
 import { Screen } from '@/components/Screen';
 import { useRefreshOnFocus } from '@/core/hooks/useRefreshOnFocus';
+import { currentMonth } from '@/core/utils/date';
 import { useAccounts } from '@/features/accounts/useAccounts';
 import { getMe } from '@/features/auth/auth.api';
 import { useAuthStore } from '@/features/auth/auth.store';
+import { BudgetsOverviewCard } from '@/features/budgets/components/BudgetsOverviewCard';
+import { useBudgets } from '@/features/budgets/useBudgets';
 import { AccountsMiniList } from '@/features/dashboard/components/AccountsMiniList';
 import { BalanceCard } from '@/features/dashboard/components/BalanceCard';
 import { useRecentTransactions, useSummary } from '@/features/dashboard/useDashboard';
@@ -25,15 +28,17 @@ export default function HomeScreen() {
   const summary = useSummary();
   const accounts = useAccounts();
   const recent = useRecentTransactions();
+  const budgets = useBudgets(currentMonth());
 
-  const refetchAll = () => Promise.all([summary.refetch(), accounts.refetch(), recent.refetch()]);
+  const refetchAll = () =>
+    Promise.all([summary.refetch(), accounts.refetch(), recent.refetch(), budgets.refetch()]);
 
   // Al volver a Inicio (p. ej. tras registrar un movimiento) se recargan los datos.
   useRefreshOnFocus(refetchAll);
 
   const refreshing =
     !summary.isPending &&
-    (summary.isRefetching || accounts.isRefetching || recent.isRefetching);
+    (summary.isRefetching || accounts.isRefetching || recent.isRefetching || budgets.isRefetching);
 
   const firstName = (user?.name || user?.email || '').split(/\s+/)[0];
 
@@ -58,6 +63,13 @@ export default function HomeScreen() {
           isPending={summary.isPending}
           error={summary.error}
           onRetry={() => summary.refetch()}
+        />
+
+        <BudgetsOverviewCard
+          budgets={budgets.data}
+          isPending={budgets.isPending}
+          error={budgets.error}
+          onRetry={() => budgets.refetch()}
         />
 
         <AccountsMiniList
