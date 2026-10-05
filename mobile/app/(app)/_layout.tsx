@@ -30,6 +30,8 @@ export default function AppLayout() {
         name="accounts/new"
         options={{ title: 'Nueva cuenta', presentation: 'modal' }}
       />
+      {/* El título ("Nuevo gasto" / "Nuevo ingreso") lo fija la propia pantalla. */}
+      <Stack.Screen name="add/[type]" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }

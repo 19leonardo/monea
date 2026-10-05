@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { type ComponentProps, useState } from 'react';
 import type { ColorValue } from 'react-native';
 import { Portal, Snackbar, useTheme } from 'react-native-paper';
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AddTabButton } from '@/components/AddTabButton';
 import { AddTransactionSheet } from '@/components/AddTransactionSheet';
+import { useFeedback } from '@/core/ui/feedback.store';
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -24,7 +25,7 @@ export default function TabsLayout() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [sheetVisible, setSheetVisible] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const { message, clearMessage } = useFeedback();
 
   const openSheet = () => setSheetVisible(true);
 
@@ -71,16 +72,17 @@ export default function TabsLayout() {
       <AddTransactionSheet
         visible={sheetVisible}
         onDismiss={() => setSheetVisible(false)}
-        onSelect={() => {
+        onSelect={(kind) => {
           setSheetVisible(false);
-          setMessage('Formulario en construcción (Paso 3)');
+          router.push(kind === 'GASTO' ? '/add/gasto' : '/add/ingreso');
         }}
       />
 
+      {/* Mensajes globales (p. ej. "Gasto registrado" al volver del formulario). */}
       <Portal>
         <Snackbar
           visible={!!message}
-          onDismiss={() => setMessage(null)}
+          onDismiss={clearMessage}
           duration={3000}
           wrapperStyle={{ bottom: TAB_BAR_HEIGHT + insets.bottom }}
         >
