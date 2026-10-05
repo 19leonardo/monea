@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 
 import { Screen } from '@/components/Screen';
+import { AccountsSummaryCard } from '@/features/accounts/components/AccountsSummaryCard';
 import { getMe } from '@/features/auth/auth.api';
 import { useAuthStore } from '@/features/auth/auth.store';
 
@@ -17,13 +19,19 @@ export default function HomeScreen() {
   });
 
   return (
-    <Screen title="Inicio" centered>
-      <Text variant="headlineSmall" style={{ textAlign: 'center' }}>
-        Hola, {user?.name || user?.email}
-      </Text>
-      <Text variant="bodyLarge" style={{ color: colors.onSurfaceVariant, textAlign: 'center' }}>
-        Aquí irá tu resumen financiero
-      </Text>
+    <Screen title="Inicio">
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text variant="headlineSmall">Hola, {user?.name || user?.email}</Text>
+        <AccountsSummaryCard />
+        <Text variant="bodyMedium" style={[styles.soon, { color: colors.onSurfaceVariant }]}>
+          Aquí irá tu resumen financiero
+        </Text>
+      </ScrollView>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { gap: 16 },
+  soon: { textAlign: 'center', marginTop: 8 },
+});
