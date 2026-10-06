@@ -25,3 +25,31 @@ export type IncomeVsExpenses = {
   expenses: string;
   net: string;
 };
+
+/** Un punto de GET /statistics/monthly. */
+export type MonthlyPoint = {
+  /** "YYYY-MM" */
+  month: string;
+  income: string;
+  expenses: string;
+};
+
+/** Últimos N meses, del más antiguo al más reciente (los vacíos en "0.00"). */
+export type MonthlySeries = {
+  series: MonthlyPoint[];
+};
+
+/** GET /statistics/comparison: el mes contra el anterior. */
+export type Comparison = {
+  period: string;
+  previous_period: string;
+  expenses: string;
+  previous_expenses: string;
+  /** "15.0"; null si el mes anterior fue 0 (sin base de comparación). */
+  expenses_change_pct: string | null;
+  income: string;
+  previous_income: string;
+  income_change_pct: string | null;
+  /** null si el mes aún no empezó. */
+  daily_avg_expense: string | null;
+};

@@ -101,3 +101,8 @@ export function shiftMonth(period: string, delta: number): string {
   const [year, month] = period.split('-').map(Number);
   return currentMonth(new Date(year, month - 1 + delta, 1));
 }
+
+/** "2026-05" -> "may" (eje X de los gráficos). */
+export function formatMonthShort(period: string): string {
+  return MONTHS[Number(period.slice(5, 7)) - 1];
+}
