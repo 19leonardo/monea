@@ -35,3 +35,15 @@ def parse_month(month: str) -> tuple[dt.date, dt.date]:
         dt.date(year + 1, 1, 1) if month_number == 12 else dt.date(year, month_number + 1, 1)
     )
     return start, end_exclusive
+
+
+def shift_month(month: str, delta: int) -> str:
+    """shift_month("2026-01", -1) -> "2025-12"."""
+    year, month_number = int(month[:4]), int(month[5:7])
+    index = year * 12 + (month_number - 1) + delta
+    return f"{index // 12:04d}-{index % 12 + 1:02d}"
+
+
+def days_in_month(month: str) -> int:
+    start, end_exclusive = parse_month(month)
+    return (end_exclusive - start).days

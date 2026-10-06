@@ -94,3 +94,35 @@ def totals_by_category(
         CategoryTotal(category_id=id_, category_name=name, category_icon=icon, total=Decimal(sum_))
         for id_, name, icon, sum_ in rows
     ]
+
+
+@dataclass(frozen=True)
+class MonthTotals:
+    month: str  # "YYYY-MM"
+    income: Decimal
+    expenses: Decimal
+
+
+def totals_by_month(
+    db: Session, user_id: int, start: dt.date, end_exclusive: dt.date
+) -> list[MonthTotals]:
+    """
+    Ingresos y gastos por mes en [start, end_exclusive): GROUP BY sobre el mes de
+    transactions.date. Solo devuelve los meses CON movimientos (el servicio rellena el resto).
+    """
+    month = func.to_char(Transaction.date, "YYYY-MM").label("month")
+    income = func.sum(case((Transaction.type == "INGRESO", Transaction.amount), else_=0))
+    expenses = func.sum(case((Transaction.type == "GASTO", Transaction.amount), else_=0))
+    rows = db.execute(
+        select(month, income, expenses)
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.date >= start,
+            Transaction.date < end_exclusive,
+        )
+        .group_by(month)
+        .order_by(month)
+    ).all()
+    return [
+        MonthTotals(month=m, income=Decimal(i), expenses=Decimal(e)) for m, i, e in rows
+    ]

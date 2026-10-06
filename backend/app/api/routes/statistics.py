@@ -6,7 +6,9 @@ from app.database.connection import get_db
 from app.models import User
 from app.schemas.statistics import (
     ByCategoryRead,
+    ComparisonRead,
     IncomeVsExpensesRead,
+    MonthlySeriesRead,
     StatisticsType,
     SummaryRead,
 )
@@ -51,3 +53,23 @@ def get_income_vs_expenses(
 ):
     """Ingresos, gastos y balance del mes."""
     return statistics_service.get_income_vs_expenses(db, user, month)
+
+
+@router.get("/monthly", response_model=MonthlySeriesRead)
+def get_monthly_series(
+    months: int = Query(default=6, ge=1, le=24, description="Cantidad de meses (1 a 24)"),
+    user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Ingresos y gastos de los últimos N meses (incluido el actual), del más antiguo al más reciente."""
+    return statistics_service.get_monthly_series(db, user, months)
+
+
+@router.get("/comparison", response_model=ComparisonRead)
+def get_comparison(
+    month: str | None = _MONTH_QUERY,
+    user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """El mes elegido contra el anterior: % de cambio y gasto diario promedio."""
+    return statistics_service.get_comparison(db, user, month)

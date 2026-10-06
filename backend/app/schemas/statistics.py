@@ -43,3 +43,35 @@ class IncomeVsExpensesRead(BaseModel):
     income: Decimal
     expenses: Decimal
     net: Decimal = Field(description="income − expenses")
+
+
+class MonthlyPoint(BaseModel):
+    month: str = Field(examples=["2026-10"])
+    income: Decimal
+    expenses: Decimal
+
+
+class MonthlySeriesRead(BaseModel):
+    """Últimos N meses, del más antiguo al más reciente; los meses vacíos van en 0."""
+
+    series: list[MonthlyPoint]
+
+
+class ComparisonRead(BaseModel):
+    """Mes elegido contra el anterior."""
+
+    period: str = Field(examples=["2026-10"])
+    previous_period: str = Field(examples=["2026-09"])
+    expenses: Decimal
+    previous_expenses: Decimal
+    expenses_change_pct: Decimal | None = Field(
+        description="% de cambio vs. el mes anterior, 1 decimal; null si el anterior fue 0"
+    )
+    income: Decimal
+    previous_income: Decimal
+    income_change_pct: Decimal | None = Field(
+        description="% de cambio vs. el mes anterior, 1 decimal; null si el anterior fue 0"
+    )
+    daily_avg_expense: Decimal | None = Field(
+        description="Gasto del mes / días transcurridos (null si el mes aún no empezó)"
+    )

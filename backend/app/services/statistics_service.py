@@ -2,18 +2,29 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from sqlalchemy.orm import Session
 
-from app.core.months import current_month, parse_month
+from app.core import months
+from app.core.months import current_month, days_in_month, parse_month, shift_month
 from app.models import User
 from app.repositories import statistics_repository
 from app.schemas.statistics import (
     ByCategoryRead,
     CategoryTotalRead,
+    ComparisonRead,
     IncomeVsExpensesRead,
+    MonthlyPoint,
+    MonthlySeriesRead,
     StatisticsType,
     SummaryRead,
 )
 
-__all__ = ["current_month", "get_by_category", "get_income_vs_expenses", "get_summary"]
+__all__ = [
+    "current_month",
+    "get_by_category",
+    "get_comparison",
+    "get_income_vs_expenses",
+    "get_monthly_series",
+    "get_summary",
+]
 
 _CENTS = Decimal("0.01")
 _ONE_DECIMAL = Decimal("0.1")
@@ -85,4 +96,75 @@ def get_income_vs_expenses(
         income=_money(totals.income),
         expenses=_money(totals.expenses),
         net=_money(totals.income - totals.expenses),
+    )
+
+
+def get_monthly_series(db: Session, user: User, count: int = 6) -> MonthlySeriesRead:
+    """Últimos `count` meses (incluido el actual), del más antiguo al más reciente."""
+    last = current_month()
+    first = shift_month(last, -(count - 1))
+    start, _ = parse_month(first)
+    _, end_exclusive = parse_month(last)
+
+    found = {
+        row.month: row
+        for row in statistics_repository.totals_by_month(db, user.id, start, end_exclusive)
+    }
+    zero = Decimal("0")
+    series = []
+    for offset in range(count):
+        month = shift_month(first, offset)
+        row = found.get(month)
+        # Los meses sin movimientos van en 0: la línea del gráfico no tiene huecos.
+        series.append(
+            MonthlyPoint(
+                month=month,
+                income=_money(row.income if row else zero),
+                expenses=_money(row.expenses if row else zero),
+            )
+        )
+    return MonthlySeriesRead(series=series)
+
+
+def _change_pct(current: Decimal, previous: Decimal) -> Decimal | None:
+    """round((actual − anterior) / anterior × 100, 1); sin base de comparación -> None."""
+    if previous == 0:
+        return None
+    return ((current - previous) / previous * 100).quantize(_ONE_DECIMAL, rounding=ROUND_HALF_UP)
+
+
+def _elapsed_days(period: str) -> int:
+    """Días transcurridos del mes: hoy si es el mes actual, todos si ya pasó, 0 si es futuro."""
+    today_month = current_month()
+    if period == today_month:
+        return months.local_today().day
+    if period < today_month:  # "YYYY-MM" se compara bien como texto
+        return days_in_month(period)
+    return 0
+
+
+def get_comparison(db: Session, user: User, month: str | None = None) -> ComparisonRead:
+    period, start, end_exclusive = _period_range(month)
+    previous_period = shift_month(period, -1)
+    previous_start, previous_end = parse_month(previous_period)
+
+    current = statistics_repository.transaction_totals(db, user.id, start, end_exclusive)
+    previous = statistics_repository.transaction_totals(
+        db, user.id, previous_start, previous_end
+    )
+
+    days = _elapsed_days(period)
+    daily_avg = (
+        (current.expenses / days).quantize(_CENTS, rounding=ROUND_HALF_UP) if days > 0 else None
+    )
+    return ComparisonRead(
+        period=period,
+        previous_period=previous_period,
+        expenses=_money(current.expenses),
+        previous_expenses=_money(previous.expenses),
+        expenses_change_pct=_change_pct(current.expenses, previous.expenses),
+        income=_money(current.income),
+        previous_income=_money(previous.income),
+        income_change_pct=_change_pct(current.income, previous.income),
+        daily_avg_expense=daily_avg,
     )
